@@ -1,15 +1,16 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_convoy_suppression.dart';
 
 const _tracerName = 'dartastic_otel_libs_convoy';
 
-Tracer _tracer() => OTel.tracerProvider().getTracer(_tracerName);
+APITracer _tracer() => OTelAPI.tracerProvider().getTracer(_tracerName);
 
 class ConvoyResult {
+  /// Creates a result.
   const ConvoyResult({
     this.projectId,
     this.endpointId,
@@ -50,8 +51,13 @@ class ConvoyResult {
   final int? statusCode;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class ConvoyCallResult<T> {
+  /// Creates a call result.
   const ConvoyCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final ConvoyResult? result;
 }
@@ -77,62 +83,62 @@ Future<T> tracedConvoy<T>({
   final span = _tracer().startSpan(
     'convoy $operation',
     kind: SpanKind.client,
-    attributes: OTel.attributesFromMap(m),
+    attributes: OTelAPI.attributesFromMap(m),
   );
   try {
     final r = await invoke();
     if (r.result != null) {
       final extras = <Attribute<Object>>[];
       if (r.result!.projectId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'convoy.project.id',
           r.result!.projectId!,
         ));
       }
       if (r.result!.endpointId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'convoy.endpoint.id',
           r.result!.endpointId!,
         ));
       }
       if (r.result!.eventId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'convoy.event.id',
           r.result!.eventId!,
         ));
       }
       if (r.result!.deliveryAttemptId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'convoy.delivery_attempt.id',
           r.result!.deliveryAttemptId!,
         ));
       }
       if (r.result!.subscriptionId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'convoy.subscription.id',
           r.result!.subscriptionId!,
         ));
       }
       if (r.result!.sourceId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'convoy.source.id',
           r.result!.sourceId!,
         ));
       }
       if (r.result!.eventType != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'convoy.event.type',
           r.result!.eventType!,
         ));
       }
       if (r.result!.projectType != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'convoy.project.type',
           r.result!.projectType!,
         ));
       }
       if (r.result!.deliveryStatus != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'convoy.delivery.status',
           r.result!.deliveryStatus!,
         ));
@@ -145,31 +151,31 @@ Future<T> tracedConvoy<T>({
         }
       }
       if (r.result!.retryCount != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'convoy.retry.count',
           r.result!.retryCount!,
         ));
       }
       if (r.result!.responseStatusCode != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'convoy.response.status_code',
           r.result!.responseStatusCode!,
         ));
       }
       if (r.result!.responseLatencyMs != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'convoy.response.latency_ms',
           r.result!.responseLatencyMs!,
         ));
       }
       if (r.result!.endpointDisabled != null) {
-        extras.add(OTel.attributeBool(
+        extras.add(OTelAPI.attributeBool(
           'convoy.endpoint.disabled',
           r.result!.endpointDisabled!,
         ));
       }
       if (r.result!.statusCode != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'http.response.status_code',
           r.result!.statusCode!,
         ));
@@ -180,13 +186,13 @@ Future<T> tracedConvoy<T>({
           );
         }
       }
-      if (extras.isNotEmpty) span.addAttributes(OTel.attributes(extras));
+      if (extras.isNotEmpty) span.addAttributes(OTelAPI.attributes(extras));
     }
     return r.value;
   } catch (e, st) {
-    span.addAttributes(OTel.attributes([
-      OTel.attributeString(
-        ErrorResource.errorType.key,
+    span.addAttributes(OTelAPI.attributes([
+      OTelAPI.attributeString(
+        ErrorAttributes.errorType.key,
         e.runtimeType.toString(),
       ),
     ]));
